@@ -115,21 +115,3 @@ Code/DAX: MIT (or your preferred license).
 
 Data may be proprietary—do not commit raw source files containing confidential info.
 
-🧩 Repo structure (suggested)
-/pbix/VF_nettoyé.pbix
-/docs/screenshots/...
-/DAX/Measures.md
-README.md
-LICENSE
-
-🐛 Issues
-
-Found a bug or mismatch? Open an issue with:
-
-screenshot of the visual
-
-expected vs actual
-
-page name + fields used
-
-filter context (year, boutique, months)
