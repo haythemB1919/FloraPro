@@ -1,0 +1,117 @@
+✨ Key features
+
+Sales and objective tracking for 2024 (with 2025 data where available)
+
+Breakdowns by Boutique and Mois (Jan–Déc sorted correctly via NoMois)
+
+KPI cards & combo charts: CA Total 2024 vs Objectif CA 2024, % Atteinte, Écart
+
+Diagnostics visuals (contrôle OK/KO, deltas absolus/relatifs)
+
+Reusable, documented DAX measures
+
+🧱 Data model (star)
+
+Dimensions
+
+DimDate – Date, Année, Mois, NoMois, AnMo
+
+DimBoutique – Boutique
+
+Facts
+
+FactSales – historical sales (multi-year)
+
+FactSales2024 – filtered/specialised 2024 view for performance KPIs
+
+Objectifs2024 – imported table with OBJECTIF CHIFFRE D'AFFAIRE TOT.
+
+Relationships
+
+DimDate[Date] → FactSales[DateOK] / FactSales2024[DateOK] / Objectifs2024[DateOK] (one-to-many, single direction)
+
+DimBoutique[Boutique] → [Boutique] in each fact (one-to-many, single direction)
+
+Keep a pure star (no fact-to-fact joins). If you can’t relate Objectifs2024, use TREATAS (see DAX below).
+
+🧮 DAX (core measures)
+-- Always scoped to 2024 via the calendar
+CA Total 2024 =
+CALCULATE( SUM(FactSales[CA Total]), DimDate[Année] = 2024 )
+
+-- If Objectifs2024 is RELATED via DimDate & DimBoutique
+Objectif CA 2024 =
+CALCULATE( SUM(Objectifs2024[OBJECTIF CHIFFRE D'AFFAIRE TOT.]), DimDate[Année] = 2024 )
+
+-- Fallback if no relationship to Objectifs2024 (project filters)
+Objectif CA 2024 (sans relation) =
+CALCULATE(
+    SUM(Objectifs2024[OBJECTIF CHIFFRE D'AFFAIRE TOT.]),
+    TREATAS( VALUES(DimDate[Date]), Objectifs2024[DateOK] ),
+    TREATAS( VALUES(DimBoutique[Boutique]), Objectifs2024[Boutique] ),
+    DimDate[Année] = 2024
+)
+
+Écart CA 2024 =
+[CA Total 2024] - [Objectif CA 2024]  -- or the (sans relation) version
+
+% Atteinte CA 2024 =
+DIVIDE( [CA Total 2024], [Objectif CA 2024] )
+
+
+Other frequently used measures in the model:
+
+CA Diff, CA Diff Abs, CA Contrôle, CA Contrôle OK ?
+
+CA Flora, CA Tiers, Part Flora (CA) %
+
+Pieces KPIs (Flora/Tiers vendues)
+
+📊 Report pages (examples)
+
+Page 1: KPI overview – CA Total 2024 vs Objectif CA 2024 (combo chart)
+
+Page 4/5: Diagnostics – CA Diff / Contrôle KO focus
+
+Page 7/8: Key Influencers (what impacts Part Flora % and Écart CA)
+
+Page 9/10: Detailed tables by Boutique × Mois (with sorting by NoMois)
+
+Page 11: 2024 summary (by boutique)
+
+⚠️ Known data notes
+
+2025: some boutiques lack CA Article Flora / CA Tiers ⇒ derivative measures may be blank or volatile.
+
+% Atteinte > 100% is normal when CA > Objectif (e.g., 248% means 2.48× the target).
+
+Use DIVIDE to safely handle division by zero in % KPIs.
+
+If you see (Vide) on boutiques in visuals, check the relationship and field source on the axis/legend.
+
+🚀 Getting started
+
+Clone the repo and open VF_nettoyé.pbix in Power BI Desktop.
+
+Update data source credentials if prompted.
+
+Verify relationships exactly as listed above.
+
+Use DimDate[Mois] sorted by DimDate[NoMois] on visuals for calendar order.
+
+🗺️ Roadmap
+
+ Add data quality checks for missing 2025 attributes
+
+ Document all DAX in /DAX/Measures.md
+
+ Publish screenshots in /docs/screenshots
+
+ Optional: parameterize year selection (2024/2025)
+
+📄 License & data
+
+Code/DAX: MIT (or your preferred license).
+
+Data may be proprietary—do not commit raw source files containing confidential info.
+
